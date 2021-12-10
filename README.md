@@ -1,6 +1,6 @@
 # Previsão de Óbito
 
-Uma Api para previsão de risco de óbito ou melhora. É possível acessar API online em:  http://... 
+Uma Api para previsão de risco de óbito ou melhora. É possível acessar a documentação da API em:  https://ml-paciente.herokuapp.com/docs
 
 ## Como executar?
 
