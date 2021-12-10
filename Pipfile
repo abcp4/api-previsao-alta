@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+fastapi = "*"
+scikit-learn = "*"
+uvicorn = {extras = ["standard"], version = "*"}
+imbalanced-learn = "*"
+
+[dev-packages]
+pre-commit = "*"
+
+[requires]
+python_version = "3.8"
