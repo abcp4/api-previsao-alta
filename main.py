@@ -1,8 +1,8 @@
 """ Módulo principal da API de predição
 """
 import joblib
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from fastapi import FastAPI
+from pydantic import BaseModel, validator
 
 description = """
 # Desafio Machine Learning Engineer. 🚀
@@ -32,10 +32,6 @@ app = FastAPI(
         "name": "Ivan Pereira",
         "email": "navi1921@gmail.com",
     },
-    license_info={
-        "name": "Apache 2.0",
-        "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
-    },
 )
 
 model = joblib.load("sepse_model.joblib")
@@ -54,27 +50,45 @@ class PatientData(BaseModel):
     mean_arterial_pressure: float
     oxygen_saturation: float
 
+    @validator("sector")
+    def invalid_sector(cls, value):
+        value = value.upper().strip()
+        if value not in [
+            "UTIG",
+            "1AP2",
+            "4AP2",
+            "UTIC",
+            "UTIP",
+            "3AP1",
+            "3AP2",
+            "4AP1",
+            "1AP1",
+            "2AP2",
+            "UIP",
+            "3AP3",
+            "1AP2 - 126",
+            "2AP1",
+            "3AP3 - EPI",
+            "SEMI-CO",
+        ]:
+            raise ValueError("the sector does not exist in the database")
+        return value
+
 
 @app.post("/predict")
 def predict_data(data: PatientData):
     """Informe os dados do paciente que deseja obter uma predição."""
-    try:
-        sector_encoded = label_encoder.transform([data.sector])
-    except ValueError:
-        raise HTTPException(status_code=404, detail="Setor não encontrado")
+    sector_encoded = label_encoder.transform([data.sector])
+    features = [
+        data.age,
+        sector_encoded,
+        data.temperature,
+        data.respiratory_frequency,
+        data.systolic_blood_pressure,
+        data.diastolic_blood_pressure,
+        data.mean_arterial_pressure,
+        data.oxygen_saturation,
+    ]
 
-    y_pred = model.predict(
-        [
-            [
-                data.age,
-                sector_encoded,
-                data.temperature,
-                data.respiratory_frequency,
-                data.systolic_blood_pressure,
-                data.diastolic_blood_pressure,
-                data.mean_arterial_pressure,
-                data.oxygen_saturation,
-            ]
-        ]
-    )
+    y_pred = model.predict([features])
     return {"predição": y_pred[0]}
